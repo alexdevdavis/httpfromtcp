@@ -1,7 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"io"
+	"os"
+)
 
 func main() {
-	fmt.Print("I hope I get the job!")
+	f, err := os.Open("messages.txt")
+	if err != nil {
+		fmt.Printf("something went wrong reading file: %v", err)
+		return
+	}
+	byteStream := make([]byte, 8)
+	for {
+		_, err := f.Read(byteStream)
+		if err == io.EOF {
+			return
+		}
+		fmt.Printf("read: %s\n", string(byteStream))
+	}
 }
