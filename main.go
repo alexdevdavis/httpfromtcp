@@ -32,18 +32,24 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 		buffer := make([]byte, 8, 8)
 		currentLine := ""
 		for {
-			_, err := f.Read(buffer)
+			n, err := f.Read(buffer)
 
 			if err == io.EOF {
+				break
+			} else if err != nil {
+				fmt.Printf("error reading file: %v", err)
 				return
 			}
-			parts := strings.Split(string(buffer), "\n")
-			currentLine += parts[0]
-			if len(parts) > 1 {
+			parts := strings.Split(string(buffer[:n]), "\n")
+			for i := 0; i < len(parts)-1; i++ {
+				currentLine += parts[i]
 				ch <- currentLine
-				currentLine = parts[len(parts)-1]
+				currentLine = ""
 			}
-
+			currentLine += parts[len(parts)-1]
+		}
+		if currentLine != "" {
+			ch <- currentLine
 		}
 	}()
 	return ch
